@@ -1,0 +1,111 @@
+# class model(nn.Module):
+
+#     def __init__(self, num_classes=10, input_dim = 2):
+#         super(model, self).__init__()
+        
+#         self.baseModel = nn.Sequential( 
+            
+#             nn.Conv1d(in_channels=input_dim, out_channels=4, kernel_size=5,padding=1),
+#             nn.BatchNorm1d(4),
+#             nn.ReLU(inplace=True),      
+            
+#             nn.Conv1d(in_channels=4, out_channels=8, kernel_size=5,padding=1),
+#             nn.BatchNorm1d(8),
+#             nn.ReLU(inplace=True),
+            
+#             nn.Conv1d(in_channels=8, out_channels=8, kernel_size=5,padding=1),
+#             nn.BatchNorm1d(8),
+#             nn.ReLU(inplace=True),      
+            
+#             nn.Conv1d(in_channels=8, out_channels=16, kernel_size=5,padding=1),
+#             nn.BatchNorm1d(16),
+#             nn.ReLU(inplace=True),
+                
+# #             nn.Conv1d(in_channels=8, out_channels=16, kernel_size=3,padding=1),
+# #             nn.BatchNorm1d(16),
+# #             nn.ReLU(inplace=True),
+            
+# #             nn.AvgPool1d(kernel_size=2, stride=2, padding = 0),   
+              
+# #             nn.Conv1d(in_channels=16, out_channels=16, kernel_size=3,padding=1),
+# #             nn.ReLU(inplace=True),
+            
+# #             nn.Conv1d(in_channels=16, out_channels=16, kernel_size=3,padding=1),
+# #             nn.ReLU(inplace=True),
+            
+# #             nn.Conv1d(in_channels=16, out_channels=8, kernel_size=3,padding=1),
+# #             nn.ReLU(inplace=True),
+            
+#             nn.AvgPool1d(kernel_size=2, stride=2, padding = 0),
+#         )
+        
+#         self.f = nn.Sequential(
+            
+#             nn.Flatten(),
+#             nn.Linear(in_features=16*60, out_features=128),
+#             nn.ReLU(inplace=True),
+#             nn.Linear(in_features=128, out_features=num_classes),
+#         )
+
+        
+#     def forward(self, X):
+#         #X = X.view([-1,1,2,128])
+#         X = self.baseModel(X)
+#         #print(X.shape)
+#         X = self.f(X)
+#         return X
+
+
+# blNet = model().to(device)
+# optimizer = optim.Adam(blNet.parameters(), lr=0.001, weight_decay=5e-4)
+# scheduler = StepLR(optimizer,step_size=8,gamma=0.1)
+# criterion = nn.CrossEntropyLoss()
+# NUM_EPOCHS = 30
+
+========================
+
+# # Last whole branch
+# self.baseModel = nn.Sequential(
+#             nn.Conv1d(in_channels=input_dim, out_channels=64, kernel_size=3,padding=1),
+#             nn.BatchNorm1d(64),
+#             nn.ReLU(inplace=True),
+
+#             nn.MaxPool1d(kernel_size=2, stride=2,padding = 0),
+
+#             nn.Conv1d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
+#             nn.BatchNorm1d(64),
+#             nn.ReLU(inplace=True),
+
+#             nn.MaxPool1d(kernel_size=2, stride=2, padding = 0),
+
+#             nn.Conv1d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
+#             nn.BatchNorm1d(64),
+#             nn.ReLU(inplace=True),
+            
+
+#         )
+
+# self.longBranch = nn.Sequential(
+#             nn.Conv1d(in_channels=64, out_channels=32, kernel_size=3, padding=1),
+#             nn.BatchNorm1d(32),
+#             nn.ReLU(inplace=True),
+            
+#             nn.Conv1d(in_channels=32, out_channels=32, kernel_size=3, padding=1),
+#             nn.BatchNorm1d(32),
+#             nn.ReLU(inplace=True),
+            
+#             nn.Conv1d(in_channels=32, out_channels=16, kernel_size=3, padding=1),
+#             nn.BatchNorm1d(16),
+#             nn.ReLU(inplace=True),
+
+#             nn.MaxPool1d(kernel_size=2, stride=2, padding = 0),
+#             nn.Flatten(),
+#         )
+
+# self.fcs = nn.Sequential(
+#             nn.Linear(in_features=256, out_features=256),
+#             nn.Dropout(0.5),
+#             nn.Linear(in_features=256, out_features=64),
+#             nn.Dropout(0.5),
+#             nn.Linear(in_features=64, out_features=num_classes)
+#         )
