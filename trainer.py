@@ -3,32 +3,35 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.nn.functional as func
-from torchvision.models import resnet18
-from torchvision import transforms, models
 import torch.optim as optim
-from torch.optim.lr_scheduler import ExponentialLR
-from torch.optim.lr_scheduler import StepLR
+import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
 from scipy.stats import entropy
+from getData import * 
+
 # Seed for reproducibility
 SEED = 25
 torch.manual_seed(SEED)
+np.random.seed(SEED)
 
 class eeHandler():
-    def __init__(self, net, criterion, optimizer, device, nBranches=2, num_epochs=50, bestPath="./models/best_0420.pth"):
+    def __init__(self, net, criterion, optimizer, device, nBranches=2, scheduler=None, num_epochs=50, bestPath="./models/best_0420.pth"):
         self.net = net
         self.criterion = criterion
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.NUM_EPOCHS = num_epochs
         self.device = device
         self.bestPath = bestPath
         self.nBranches = nBranches
+
         self.history = {"1": {"train": {"loss": [], "accuracy": []}, "validation":{"loss": [], "accuracy": []}},
               "2": {"train": {"loss": [], "accuracy": []}, "validation":{"loss": [], "accuracy": []}},
               "T": {"train": {"loss": [], "accuracy": []}, "validation":{"loss": [], "accuracy": []}}}
+        
         
     def train(self, tLoader, vLoader=None):
         eStopThreshold, eStopCounter = 8, 0 
@@ -66,7 +69,9 @@ class eeHandler():
                 totalAcc += 0.5*acc1+0.5*acc2
                 
                 self.optimizer.step()
-            
+            if self.scheduler:
+                self.scheduler.step()
+
             loss1Total = loss1Total/len(tLoader)
             loss2Total = loss2Total/len(tLoader)
             totalLoss = totalLoss/len(tLoader)
@@ -182,6 +187,17 @@ class eeHandler():
             acc = acc / sum([len(recorder[x]) for x in range(self.nBranches)])
 
         return recorder, torch.FloatTensor(predicted), acc
+    
+    def forward_timeTest(self, sLoader, ratio=0.1):
+        self.net.eval()
+        num_samples_to_select = int(ratio * 500)
+        with torch.no_grad():
+            for inputs, _ in sLoader:
+                inputs = inputs.to(self.device)
+                selected_data = inputs[0: num_samples_to_select]
+                remaining_data = inputs[num_samples_to_select: inputs.shape[0]]
+                _ = self.net.short_forward(selected_data)
+                _ = self.net.long_forward(remaining_data)
 
     def testingSummary(self, recorder, nBranches=2, overall=True):
         print('Summary')
@@ -198,13 +214,15 @@ class eeHandler():
             overallAcc += acc*countSamples
         if overall:
             print("Overall Weighted Accuracy: {:.2f}%".format(overallAcc/overallCount*100))   
-            
+
+
 
 class blHandler():
-    def __init__(self, net, criterion, optimizer, device, num_epochs=50, bestPath="./models/best_0420.pth"):
+    def __init__(self, net, criterion, optimizer, device, scheduler=None, num_epochs=50, bestPath="./models/best_0420.pth"):
         self.net = net
         self.criterion = criterion
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.NUM_EPOCHS = num_epochs
         self.device = device
         self.bestPath = bestPath
@@ -237,7 +255,8 @@ class blHandler():
                 totalAcc += acc
                 
                 self.optimizer.step()
-                
+            if self.scheduler:
+                self.scheduler.step() 
             totalLoss = totalLoss/len(tLoader)
             totalAcc = totalAcc/len(tLoader)
             
@@ -291,4 +310,67 @@ class blHandler():
 
         return self.net, self.history
 
+    def infer(self, sLoader):
+        """
+            @Inference
+        """
+        
+        acc, tLoss = 0, 0
+        predicted = []
+        with torch.no_grad():
+            self.net.eval()
+            for inputs, gTruth in sLoader:
+                inputs, gTruth = inputs.to(self.device), gTruth.to(self.device)
+                outputs = self.net(inputs)
 
+                _, preds = torch.max(outputs, 1)
+                predicted.append(preds)
+                loss = self.criterion(outputs, gTruth.long())
+                tLoss += loss.item()
+                acc += accuracy_score(gTruth.detach().cpu().numpy(), preds.detach().cpu().numpy())
+
+            acc = acc/len(sLoader)
+            tLoss = tLoss/len(sLoader)
+        return predicted, acc
+    
+
+    def late_inference(self, sLoader, threshold=0.05, verbose=False):
+        """
+            @Inference: we compare the output confidence (entropy) at a branch with a certain threshold.
+        """
+        softmaxLayer = nn.Softmax(dim=1)
+        acc = 0
+        predicted = []
+        recorder = {x: [] for x in range(2)}
+        self.net.eval()
+        with torch.no_grad():
+            for inputs, gTruth in sLoader:
+                inputs, gTruth = inputs.to(self.device), gTruth.to(self.device)
+                x = self.net(inputs)
+                for iSample in range(x.shape[0]): # a sample by sample
+                    out1 = self.net(x[iSample:iSample+1])
+                    y = softmaxLayer(out1)
+                    e = entropy(y.detach().cpu().numpy().squeeze(), base=10)
+                    if e <= threshold:
+                        if verbose:
+                            print(e)
+                        _, label = torch.max(out1, 1)
+                        predicted.append(label)
+                        if label == gTruth[iSample].item():
+                            recorder[0].append(1)
+                            acc+=1
+                        else:
+                            recorder[0].append(0)
+                        continue
+                    out2 = self.net(x[iSample:iSample+1])
+                    _, label = torch.max(out2, 1)
+                    predicted.append(label)
+                    if label == gTruth[iSample].item():
+                        acc+=1
+                        recorder[1].append(1)
+                    else:
+                        recorder[1].append(0) 
+            
+            acc = acc / sum([len(recorder[x]) for x in range(2)])
+
+        return recorder, torch.FloatTensor(predicted), acc
