@@ -17,3 +17,18 @@ classifying signals transmitted over the radio spectrum. Deep learning (DL) tech
 > **getData.py**: a utility file to load and process the dataset.
 
 > **getModel.py**: a utility file to create and design the models.
+
+## Citation
+You can find our paper on [arXiv](https://arxiv.org/abs/2308.11100). \
+The paper is **accepted** at 2023 IEEE Global Communications Conference: Mobile and Wireless Networks (GlobeCom 2023).
+
+If you use this code or find it useful for your research, please consider citing:
+```
+@misc{EEAMC,
+      title={Using Early Exits for Fast Inference in Automatic Modulation Classification}, 
+      author={Elsayed Mohammed and Omar Mashaal and Hatem Abou-Zeid},
+      year={2023},
+      eprint={2308.11100},
+      archivePrefix={arXiv},
+}
+```
