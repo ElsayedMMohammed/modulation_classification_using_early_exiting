@@ -24,11 +24,10 @@ The paper is **accepted** at 2023 IEEE Global Communications Conference: Mobile 
 
 If you use this code or find it useful for your research, please consider citing:
 ```
-@misc{EEAMC,
-      title={Using Early Exits for Fast Inference in Automatic Modulation Classification}, 
-      author={Elsayed Mohammed and Omar Mashaal and Hatem Abou-Zeid},
-      year={2023},
-      eprint={2308.11100},
-      archivePrefix={arXiv},
+@article{mohammed2023using,
+  title={Using Early Exits for Fast Inference in Automatic Modulation Classification},
+  author={Mohammed, Elsayed and Mashaal, Omar and Abou-Zeid, Hatem},
+  journal={arXiv preprint arXiv:2308.11100},
+  year={2023}
 }
 ```
