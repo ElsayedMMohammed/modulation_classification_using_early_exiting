@@ -3,7 +3,11 @@ This repository contains the public source code release for the paper <b>"Using 
 
 This code is created and maintained by [Elsayed Mohammed](https://github.com/ElSayedMMostafa).
 
+
 *Slight differences between the results one can get using our code and the ones shown in the paper are expected specially in the inference time due to the differences in OS and computing resources used. The same trends are guranteed though.*
+
+Download the dataset from [here](https://drive.google.com/file/d/1kjXRND25yzfW4NRbGpnKgxDt2aAF_gcI/view?usp=sharing).
+ 
 
 ## Abstract
 Automatic modulation classification (AMC) plays a critical role in wireless communications by autonomously classifying signals transmitted over the radio spectrum. Deep learning (DL) techniques are increasingly being used for AMC due to their ability to extract complex wireless signal features. However, DL models are computationally intensive and incur high inference latencies. This paper proposes the application of early exiting (EE) techniques for DL models used for AMC to accelerate inference. We present and analyze four early exiting architectures and a customized multi-branch training algorithm for this problem. Through extensive experimentation, we show that signals with moderate to high signal-to-noise ratios (SNRs) are easier to classify, do not require deep architectures, and can therefore leverage the proposed EE architectures. Our experi- mental results demonstrate that EE techniques can significantly reduce the inference speed of deep neural networks without sacrificing classification accuracy. We also thoroughly study the trade-off between classification accuracy and inference time when using these architectures. To the best of our knowledge, this work represents the first attempt to apply early exiting methods to AMC, providing a foundation for future research in this area.
@@ -17,6 +21,7 @@ Automatic modulation classification (AMC) plays a critical role in wireless comm
 > **getData.py**: a utility file to load and process the dataset.
 
 > **getModel.py**: a utility file to create and design the models.
+
 
 ## Citation
 You can find our paper on [arXiv](https://arxiv.org/abs/2308.11100). \
